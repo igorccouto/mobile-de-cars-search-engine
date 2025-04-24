@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import ElementNotInteractableException
+from selenium.webdriver.common.action_chains import ActionChains
 import os
 
 class MobileDeBrowser:
@@ -19,6 +21,7 @@ class MobileDeBrowser:
             options.add_argument('--headless')
         service = Service(executable_path=geckodriver_path)
         self.driver = webdriver.Firefox(service=service, options=options)
+        self.action = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, timeout)
 
         # Instance variable
@@ -67,6 +70,15 @@ class MobileDeBrowser:
                 break
         if not found:
             raise RuntimeError(f'Model name "{model_name}" not found in options.')
+
+    def fill_first_registration_min(self, value):
+        input_elem = self.wait.until(
+            lambda driver: driver.find_element(By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]').find_element(By.XPATH, '..')
+        )
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
+        self.action.click(input_elem).perform()
+        input_elem.clear()
+        input_elem.send_keys(str(value))
 
     def close(self):
         self.driver.quit()
