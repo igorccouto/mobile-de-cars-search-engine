@@ -38,19 +38,19 @@ class MobileDeBrowser:
         except TimeoutException:
             pass
 
-    def wait_for_make_select_and_read_options(self):
-        self.make_select_elmt = self.wait.until(
+    def select_make(self, make_name):
+        """
+        Wait for the select element with ID 'make-incl-0', then select the option by visible text (case-insensitive).
+        :param make_name: The visible text of the option to select.
+        :raises: RuntimeError if the option is not found.
+        """
+        make_select_elmt = self.wait.until(
             EC.presence_of_element_located((By.ID, 'make-incl-0'))
         )
-        self.make_options_elmts = self.make_select_elmt.find_elements(By.TAG_NAME, 'option')
-        return self.make_options_elmts
-
-    def select_make(self, make_name):
-        if not hasattr(self, 'make_select_elmt') or self.make_select_elmt is None:
-            raise RuntimeError('make_select_elmt is not set. Call wait_for_make_select_and_read_options() first.')
-        self.make_select_elmt.click()
+        make_select_elmt.click()
+        options = make_select_elmt.find_elements(By.TAG_NAME, 'option')
         found = False
-        for option in self.make_options_elmts:
+        for option in options:
             if option.text.strip().lower() == make_name.strip().lower():
                 option.click()
                 found = True
