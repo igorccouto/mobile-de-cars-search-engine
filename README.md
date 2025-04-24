@@ -1,4 +1,7 @@
-# mobile-de-cars
+# Mobile.de Search Engine
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) 
+[![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/downloads/release/python-370/) ![GitHub last commit](https://img.shields.io/github/last-commit/igorccouto/mobile-de-cars-search-engine)
 
 A Python Selenium-based web scraper for mobile.de car listings. This project automates browser interactions to search for cars, select make/model, and set filters such as registration year on [mobile.de](https://www.mobile.de/).
 
