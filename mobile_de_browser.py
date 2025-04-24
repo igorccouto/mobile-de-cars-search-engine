@@ -1,0 +1,62 @@
+from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import os
+
+class MobileDeBrowser:
+    def __init__(self, headless: bool = True, timeout: int = 15):
+        """
+        Initializes a Firefox browser instance using geckodriver from the parent folder.
+        :param headless: Whether to run browser in headless mode.
+        :param timeout: Default timeout for WebDriverWait.
+        """
+        geckodriver_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'geckodriver'))
+        options = webdriver.FirefoxOptions()
+        if headless:
+            options.add_argument('--headless')
+        service = Service(executable_path=geckodriver_path)
+        self.driver = webdriver.Firefox(service=service, options=options)
+        self.wait = WebDriverWait(self.driver, timeout)
+
+        # Instance variable
+        self.make_options_elmts = []
+
+    def go_to_search(self):
+        self.driver.get('https://suchen.mobile.de/fahrzeuge/detailsuche?lang=en&s=Car&vc=Car')
+        self.wait_for_consent_dialog()
+
+    def wait_for_consent_dialog(self):
+        try:
+            consent_dialog = WebDriverWait(self.driver, 5).until(
+                EC.presence_of_element_located((By.ID, 'mde-consent-modal-dialog'))
+            )
+            accept_button = consent_dialog.find_element(By.XPATH, ".//button[contains(., 'Accept')]")
+            accept_button.click()
+        except TimeoutException:
+            pass
+
+    def wait_for_make_select_and_read_options(self):
+        self.make_select_elmt = self.wait.until(
+            EC.presence_of_element_located((By.ID, 'make-incl-0'))
+        )
+        self.make_options_elmts = self.make_select_elmt.find_elements(By.TAG_NAME, 'option')
+        return self.make_options_elmts
+
+    def select_make(self, make_name):
+        if not hasattr(self, 'make_select_elmt') or self.make_select_elmt is None:
+            raise RuntimeError('make_select_elmt is not set. Call wait_for_make_select_and_read_options() first.')
+        self.make_select_elmt.click()
+        found = False
+        for option in self.make_options_elmts:
+            if option.text.strip().lower() == make_name.strip().lower():
+                option.click()
+                found = True
+                break
+        if not found:
+            raise RuntimeError(f'Make name "{make_name}" not found in options.')
+
+    def close(self):
+        self.driver.quit()
