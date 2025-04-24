@@ -39,11 +39,6 @@ class MobileDeBrowser:
             pass
 
     def select_make(self, make_name):
-        """
-        Wait for the select element with ID 'make-incl-0', then select the option by visible text (case-insensitive).
-        :param make_name: The visible text of the option to select.
-        :raises: RuntimeError if the option is not found.
-        """
         make_select_elmt = self.wait.until(
             EC.presence_of_element_located((By.ID, 'make-incl-0'))
         )
@@ -57,6 +52,21 @@ class MobileDeBrowser:
                 break
         if not found:
             raise RuntimeError(f'Make name "{make_name}" not found in options.')
+
+    def select_model(self, model_name):
+        model_select_elmt = self.wait.until(
+            EC.presence_of_element_located((By.ID, 'model-incl-0'))
+        )
+        model_select_elmt.click()
+        options = model_select_elmt.find_elements(By.TAG_NAME, 'option')
+        found = False
+        for option in options:
+            if option.text.strip().lower() == model_name.strip().lower():
+                option.click()
+                found = True
+                break
+        if not found:
+            raise RuntimeError(f'Model name "{model_name}" not found in options.')
 
     def close(self):
         self.driver.quit()
