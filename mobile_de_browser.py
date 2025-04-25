@@ -39,10 +39,8 @@ class MobileDeBrowser:
             pass
 
     def select_make(self, make_name):
-        make_select_elmt = self.wait.until(
-            EC.presence_of_element_located((By.ID, 'make-incl-0'))
-        )
-        self.action.move_to_element(make_select_elmt).click(make_select_elmt).perform()
+        locator = (By.ID, 'make-incl-0')
+        make_select_elmt = self._get_and_move_to_element(locator, EC.presence_of_element_located)
         options = make_select_elmt.find_elements(By.TAG_NAME, 'option')
         found = False
         for option in options:
@@ -54,10 +52,8 @@ class MobileDeBrowser:
             raise RuntimeError(f'Make name "{make_name}" not found in options.')
 
     def select_model(self, model_name):
-        model_select_elmt = self.wait.until(
-            EC.presence_of_element_located((By.ID, 'model-incl-0'))
-        )
-        self.action.move_to_element(model_select_elmt).click(model_select_elmt).perform()
+        locator = (By.ID, 'model-incl-0')
+        model_select_elmt = self._get_and_move_to_element(locator, EC.presence_of_element_located)
         options = model_select_elmt.find_elements(By.TAG_NAME, 'option')
         found = False
         for option in options:
@@ -69,46 +65,26 @@ class MobileDeBrowser:
             raise RuntimeError(f'Model name "{model_name}" not found in options.')
 
     def fill_first_registration_min(self, value):
-        input_elem = self.wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]'))
-        )
-
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
         locator = (By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]')
-        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem = self._get_and_move_to_element(locator, EC.visibility_of_element_located)
         input_elem.click()
-        input_elem.send_keys(str(value))
+        input_elem.send_keys(str(value)) 
 
     def fill_first_registration_max(self, value):
-        input_elem = self.wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-max-input"]'))
-        )
-
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
-        locator = (By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]')
-        self.wait.until(lambda d: self._element_in_viewport(locator))
+        locator = (By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-max-input"]')
+        input_elem = self._get_and_move_to_element(locator, EC.visibility_of_element_located)
         input_elem.click()
-        input_elem.send_keys(str(value))
+        input_elem.send_keys(str(value)) 
 
     def fill_mileage_min(self, value):
-        input_elem = self.wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="mileage-filter-min-input"]'))
-        )
-
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
         locator = (By.CSS_SELECTOR, 'input[data-testid="mileage-filter-min-input"]')
-        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem = self._get_and_move_to_element(locator, EC.visibility_of_element_located)
         input_elem.click()
         input_elem.send_keys(str(value)) 
 
     def fill_mileage_max(self, value):
-        input_elem = self.wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="mileage-filter-max-input"]'))
-        )
-
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
         locator = (By.CSS_SELECTOR, 'input[data-testid="mileage-filter-max-input"]')
-        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem = self._get_and_move_to_element(locator, EC.visibility_of_element_located)
         input_elem.click()
         input_elem.send_keys(str(value)) 
 
@@ -126,6 +102,12 @@ class MobileDeBrowser:
             }
             return false;
         """, element)
+
+    def _get_and_move_to_element(self, locator, expected_condition=EC.presence_of_element_located):
+        element = self.wait.until(expected_condition(locator))
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+        self.wait.until(lambda d: self._element_in_viewport(locator))
+        return element
 
     def close(self):
         self.driver.quit()
