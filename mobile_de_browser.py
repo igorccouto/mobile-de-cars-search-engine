@@ -94,6 +94,13 @@ class MobileDeBrowser:
         for fuel_type in fuel_types:
             fuel_type_options_elem.find_element(By.XPATH, f'//div//label[text()="{fuel_type}"]').click()
 
+    def check_offer_details(self, offer_details):
+        offer_details_options_locator = (By.ID, 'section-offerDetails')
+        offer_detail_options_elem = self._get_and_move_to_element(offer_details_options_locator, EC.presence_of_element_located)
+        for offer_detail in offer_details:
+            locator = (By.XPATH, f".//div//label/div[text()='{offer_detail}']")
+            self._get_and_move_to_element(locator, EC.visibility_of_element_located, offer_detail_options_elem).click()
+
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
         return self.driver.execute_script("""
@@ -109,11 +116,32 @@ class MobileDeBrowser:
             return false;
         """, element)
 
-    def _get_and_move_to_element(self, locator, expected_condition=EC.presence_of_element_located):
-        element = self.wait.until(expected_condition(locator))
+    def _get_and_move_to_element(self, locator, expected_condition=EC.presence_of_element_located, parent_element=None):
+        search_context = parent_element if parent_element is not None else self.driver
+        # Custom wait for element within the context
+        def find_in_context(driver):
+            # If using EC, call it with the context
+            return expected_condition(locator)(search_context)
+        element = self.wait.until(find_in_context)
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-        self.wait.until(lambda d: self._element_in_viewport(locator))
+        self.wait.until(lambda d: self._element_in_viewport(locator) if parent_element is None else self._element_in_viewport_within(locator, parent_element))
         return element
+
+    def _element_in_viewport_within(self, locator, parent_element):
+        element = parent_element.find_element(*locator)
+        return self.driver.execute_script("""
+            var elem = arguments[0],
+                box = elem.getBoundingClientRect(),
+                cx = box.left + box.width / 2,
+                cy = box.top + box.height / 2,
+                e = document.elementFromPoint(cx, cy);
+            for (; e; e = e.parentElement) {
+                if (e === elem)
+                    return true;
+            }
+            return false;
+        """, element)
+
 
     def close(self):
         self.driver.quit()
