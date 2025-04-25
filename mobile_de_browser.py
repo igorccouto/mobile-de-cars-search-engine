@@ -117,13 +117,29 @@ class MobileDeBrowser:
         while True:
             page_number_elem = self.driver.find_element(By.XPATH, '//button[@disabled and not(contains(normalize-space(.), "Previous"))]')
             print(page_number_elem.get_attribute('aria-label'))
+            self.collect_ads_results()
             locator = (By.CSS_SELECTOR, 'button[data-testid="pagination:next"]')
             has_next_page = self._element_exists(locator)
             if not has_next_page:
                 break
             self._move_and_click_on(locator)
-            from time import sleep
-            sleep(3)
+    
+    def collect_ads_results(self):
+        locator = (By.XPATH, '//a[contains(@data-testid, "result-listing-")]')
+        ads_elem = self.driver.find_elements(*locator)
+        for ad_elem in ads_elem:
+            ad_title_elem = ad_elem.find_elements(By.XPATH, './/h2/span[not(@data-testid) and not(text()="NEW")]') 
+            price_elem = ad_elem.find_element(By.XPATH, './/span[@data-testid="price-label"]')
+            vat_reclaimable = self._element_exists((By.XPATH, './/span[@data-testid="price-vat-sup"]'), parent_element=ad_elem)
+            battery_certificate = self._element_exists((By.XPATH, './/span[@data-testid="battery-certificate-badge"]'), parent_element=ad_elem)
+            price_battery_locator = (By.XPATH, './/span[@data-testid="price-battery"]')
+            price_battery = self._element_exists(price_battery_locator, parent_element=ad_elem)
+            battery_rental = ad_elem.find_element(*price_battery_locator).text if price_battery else 'no battery rental'
+            title = ad_title_elem[0].text
+            subtitle = ad_title_elem[1].text
+            price = self.driver.execute_script("return arguments[0].childNodes[0] ? arguments[0].childNodes[0].textContent.trim() : '';", price_elem)
+            
+            print(title, subtitle, price, vat_reclaimable, battery_certificate, battery_rental)
 
     def _move_and_click_on(self, locator, expected_condition=EC.element_to_be_clickable):
         bellow_search_button_elem = self._get_and_move_to_element(locator, expected_condition)
