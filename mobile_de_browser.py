@@ -113,9 +113,30 @@ class MobileDeBrowser:
         
         return search_title
 
+    def browser_on_results(self):
+        while True:
+            page_number_elem = self.driver.find_element(By.XPATH, '//button[@disabled and not(contains(normalize-space(.), "Previous"))]')
+            print(page_number_elem.get_attribute('aria-label'))
+            locator = (By.CSS_SELECTOR, 'button[data-testid="pagination:next"]')
+            has_next_page = self._element_exists(locator)
+            if not has_next_page:
+                break
+            self._move_and_click_on(locator)
+            from time import sleep
+            sleep(3)
+
     def _move_and_click_on(self, locator, expected_condition=EC.element_to_be_clickable):
         bellow_search_button_elem = self._get_and_move_to_element(locator, expected_condition)
         bellow_search_button_elem.click()
+
+    def _element_exists(self, locator, expected_condition=EC.presence_of_element_located, parent_element=None, timeout=2):
+        search_context = parent_element if parent_element is not None else self.driver
+        condition = expected_condition(locator)
+        try:
+            WebDriverWait(search_context, timeout).until(lambda d: condition)
+            return True
+        except TimeoutException:
+            return False
 
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
