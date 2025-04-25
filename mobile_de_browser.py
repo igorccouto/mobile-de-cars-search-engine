@@ -24,9 +24,6 @@ class MobileDeBrowser:
         self.action = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, timeout)
 
-        # Instance variable
-        self.make_options_elmts = []
-
     def go_to_search(self):
         self.driver.get('https://suchen.mobile.de/fahrzeuge/detailsuche?lang=en&s=Car&vc=Car')
         self.wait_for_consent_dialog()
@@ -45,7 +42,7 @@ class MobileDeBrowser:
         make_select_elmt = self.wait.until(
             EC.presence_of_element_located((By.ID, 'make-incl-0'))
         )
-        make_select_elmt.click()
+        self.action.move_to_element(make_select_elmt).click(make_select_elmt).perform()
         options = make_select_elmt.find_elements(By.TAG_NAME, 'option')
         found = False
         for option in options:
@@ -60,7 +57,7 @@ class MobileDeBrowser:
         model_select_elmt = self.wait.until(
             EC.presence_of_element_located((By.ID, 'model-incl-0'))
         )
-        model_select_elmt.click()
+        self.action.move_to_element(model_select_elmt).click(model_select_elmt).perform()
         options = model_select_elmt.find_elements(By.TAG_NAME, 'option')
         found = False
         for option in options:
@@ -73,12 +70,40 @@ class MobileDeBrowser:
 
     def fill_first_registration_min(self, value):
         input_elem = self.wait.until(
-            lambda driver: driver.find_element(By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]').find_element(By.XPATH, '..')
+            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]'))
         )
+
         self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
-        self.action.click(input_elem).perform()
-        input_elem.clear()
+        locator = (By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]')
+        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem.click()
         input_elem.send_keys(str(value))
+
+    def fill_first_registration_max(self, value):
+        input_elem = self.wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-max-input"]'))
+        )
+
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
+        locator = (By.CSS_SELECTOR, 'input[data-testid="first-registration-filter-min-input"]')
+        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem.click()
+        input_elem.send_keys(str(value))
+
+    def _element_in_viewport(self, locator):
+        element = self.driver.find_element(*locator)
+        return self.driver.execute_script("""
+            var elem = arguments[0],
+                box = elem.getBoundingClientRect(),
+                cx = box.left + box.width / 2,
+                cy = box.top + box.height / 2,
+                e = document.elementFromPoint(cx, cy);
+            for (; e; e = e.parentElement) {
+                if (e === elem)
+                    return true;
+            }
+            return false;
+        """, element)
 
     def close(self):
         self.driver.quit()
