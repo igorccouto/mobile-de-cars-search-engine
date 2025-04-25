@@ -155,7 +155,14 @@ class MobileDeBrowser:
         listing_details_attributes = ad_elem.find_element(By.XPATH, './/div[@data-testid="listing-details-attributes"]')
         car_info = extract_car_info(listing_details_attributes.text)
 
+        # Split title into make and model
+        title_parts = title.split(" ", 1)
+        make = title_parts[0] if len(title_parts) > 0 else ""
+        model = title_parts[1] if len(title_parts) > 1 else ""
+
         return {
+            'make': make,
+            'model': model,
             'title': title,
             'subtitle': subtitle,
             'price': price,
