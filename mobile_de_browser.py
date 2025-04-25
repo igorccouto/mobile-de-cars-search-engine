@@ -101,6 +101,20 @@ class MobileDeBrowser:
             locator = (By.XPATH, f".//div//label/div[text()='{offer_detail}']")
             self._get_and_move_to_element(locator, EC.visibility_of_element_located, offer_detail_options_elem).click()
 
+    def click_on_search(self):
+        locator = (By.CSS_SELECTOR, 'button[data-testid="belowFilter-submit-search"]')
+        self._move_and_click_on(locator)
+        painel_search_filters_elem =self._get_and_move_to_element((By.CSS_SELECTOR, 'article[data-testid="result-list-container"]'), EC.visibility_of_element_located)
+        search_title = painel_search_filters_elem.find_element(By.XPATH, '//*[@data-testid="srp-title"]').text
+        if search_title[0] == '0':
+            print('No results found')
+        else:
+            print(search_title)
+
+    def _move_and_click_on(self, locator, expected_condition=EC.element_to_be_clickable):
+        bellow_search_button_elem = self._get_and_move_to_element(locator, expected_condition)
+        bellow_search_button_elem.click()
+
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
         return self.driver.execute_script("""
