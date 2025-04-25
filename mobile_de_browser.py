@@ -110,6 +110,8 @@ class MobileDeBrowser:
             print('No results found')
         else:
             print(search_title)
+        
+        return search_title
 
     def _move_and_click_on(self, locator, expected_condition=EC.element_to_be_clickable):
         bellow_search_button_elem = self._get_and_move_to_element(locator, expected_condition)
