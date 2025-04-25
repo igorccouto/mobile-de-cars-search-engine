@@ -132,13 +132,10 @@ class MobileDeBrowser:
     def _element_exists(self, locator, expected_condition=EC.presence_of_element_located, parent_element=None, timeout=2):
         if parent_element is not None:
             try:
-                # Try to find the element directly within the parent
                 elem = parent_element.find_element(*locator)
-                # Optionally, check expected_condition if it's not just presence
                 if expected_condition == EC.presence_of_element_located:
                     return True
                 else:
-                    # Reuse the expected_condition logic but pass the found element
                     return expected_condition(locator)(elem)
             except NoSuchElementException:
                 return False
@@ -189,7 +186,6 @@ class MobileDeBrowser:
             }
             return false;
         """, element)
-
 
     def close(self):
         self.driver.quit()
