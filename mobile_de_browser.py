@@ -88,6 +88,12 @@ class MobileDeBrowser:
         input_elem.click()
         input_elem.send_keys(str(value)) 
 
+    def check_fuel_type(self, fuel_types):
+        fuel_type_options_locator = (By.CSS_SELECTOR, 'div[data-testid="fuel-type-filter"]')
+        fuel_type_options_elem = self._get_and_move_to_element(fuel_type_options_locator, EC.presence_of_element_located)
+        for fuel_type in fuel_types:
+            fuel_type_options_elem.find_element(By.XPATH, f'//div//label[text()="{fuel_type}"]').click()
+
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
         return self.driver.execute_script("""
