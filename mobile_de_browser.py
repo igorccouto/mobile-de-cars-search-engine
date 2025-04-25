@@ -90,6 +90,28 @@ class MobileDeBrowser:
         input_elem.click()
         input_elem.send_keys(str(value))
 
+    def fill_mileage_min(self, value):
+        input_elem = self.wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="mileage-filter-min-input"]'))
+        )
+
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
+        locator = (By.CSS_SELECTOR, 'input[data-testid="mileage-filter-min-input"]')
+        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem.click()
+        input_elem.send_keys(str(value)) 
+
+    def fill_mileage_max(self, value):
+        input_elem = self.wait.until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, 'input[data-testid="mileage-filter-max-input"]'))
+        )
+
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", input_elem)
+        locator = (By.CSS_SELECTOR, 'input[data-testid="mileage-filter-max-input"]')
+        self.wait.until(lambda d: self._element_in_viewport(locator))
+        input_elem.click()
+        input_elem.send_keys(str(value)) 
+
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
         return self.driver.execute_script("""
