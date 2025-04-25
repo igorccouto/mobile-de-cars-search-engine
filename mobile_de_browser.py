@@ -1,12 +1,12 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import ElementNotInteractableException
-from selenium.webdriver.common.action_chains import ActionChains
 import os
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+
 
 class MobileDeBrowser:
     def __init__(self, headless: bool = True, timeout: int = 15):
@@ -130,13 +130,24 @@ class MobileDeBrowser:
         bellow_search_button_elem.click()
 
     def _element_exists(self, locator, expected_condition=EC.presence_of_element_located, parent_element=None, timeout=2):
-        search_context = parent_element if parent_element is not None else self.driver
-        condition = expected_condition(locator)
-        try:
-            WebDriverWait(search_context, timeout).until(lambda d: condition)
-            return True
-        except TimeoutException:
-            return False
+        if parent_element is not None:
+            try:
+                # Try to find the element directly within the parent
+                elem = parent_element.find_element(*locator)
+                # Optionally, check expected_condition if it's not just presence
+                if expected_condition == EC.presence_of_element_located:
+                    return True
+                else:
+                    # Reuse the expected_condition logic but pass the found element
+                    return expected_condition(locator)(elem)
+            except NoSuchElementException:
+                return False
+        else:
+            try:
+                WebDriverWait(self.driver, timeout).until(expected_condition(locator))
+                return True
+            except TimeoutException:
+                return False
 
     def _element_in_viewport(self, locator):
         element = self.driver.find_element(*locator)
