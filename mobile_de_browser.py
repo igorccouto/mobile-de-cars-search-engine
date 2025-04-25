@@ -1,4 +1,5 @@
 import os
+import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.service import Service
@@ -205,3 +206,25 @@ class MobileDeBrowser:
 
     def close(self):
         self.driver.quit()
+
+def extract_car_info(text):
+    pattern = r"""
+        (?:.*?•\s+)*                # Non-capturing group for any leading info, non-greedy, ending at the first "•"
+        [A-Z]{2}\s+                 # Country code (ignored)
+        (?P<month>\d{2})/(?P<year>\d{4})      # Registration month/year
+        \s+•\s+(?P<mileage>[\d.,]+)\s*km      # Mileage
+        \s+•\s+(?P<kw>[\d.,]+)\s*kW\s+\((?P<hp>[\d.,]+)\s*hp\)   # Power
+        \s+•\s+(?P<fuel>.+)$                   # Fuel type
+    """
+    match = re.search(pattern, text, re.VERBOSE)
+    if match:
+        return {
+            "registration_month": match.group("month"),
+            "registration_year": match.group("year"),
+            "mileage": match.group("mileage"),
+            "kw": match.group("kw"),
+            "hp": match.group("hp"),
+            "fuel": match.group("fuel"),
+        }
+    else:
+        return {}
